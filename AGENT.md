@@ -38,12 +38,20 @@
 
 | 영역 | 선택 |
 |---|---|
-| 플랫폼 | Expo + React Native |
-| 언어 | TypeScript |
-| 스타일링 | Tailwind CSS |
-| 상태 관리 | zustand |
+| 플랫폼 | Expo (SDK 57) + React Native 0.86 |
+| 언어 | TypeScript 6 (strict) |
+| 스타일링 | Tailwind CSS 3 (NativeWind 4 경유) |
+| 상태 관리 | zustand 5 |
+| 경로 별칭 | `@/*` → `src/*` |
 
-네비게이션, 빌드, 통신 클라이언트 등 나머지는 아직 확정되지 않았다. 라이브러리를 추가하기 전에 먼저 확인받는다.
+```bash
+npm install
+npm start              # Expo 개발 서버
+npm run android        # 안드로이드에서 열기
+npm run typecheck      # tsc --noEmit
+```
+
+네비게이션, 빌드·배포는 아직 확정되지 않았다. 통신은 백엔드가 노출하는 `/openapi.json`에서 타입을 생성하는 방향이다. 라이브러리를 추가하기 전에 먼저 확인받는다.
 
 ## 디렉터리 구조
 
@@ -53,9 +61,14 @@
 nua-front/
 ├── app.json               # Expo 설정
 ├── package.json
+├── babel.config.js        # babel-preset-expo + nativewind jsx
+├── metro.config.js        # withNativeWind
 ├── tailwind.config.js     # Tailwind CSS
-├── tsconfig.json
+├── nativewind-env.d.ts    # NativeWind 타입 참조
+├── tsconfig.json          # strict, @/* → src/*
+├── .env.example
 └── src/
+    ├── index.ts           # registerRootComponent
     ├── App.tsx            # 루트 컴포넌트
     ├── api/               # 통신 클라이언트 + 도메인별 요청 함수
     ├── assets/
@@ -69,9 +82,21 @@ nua-front/
     └── utils.ts
 ```
 
+## 도구
+
+- 실행은 `npm install` 뒤 `npm start`. 타입 확인은 `npm run typecheck`.
+- 린터·포맷터 도구는 두지 않는다(백엔드와 동일). 포맷은 기존 코드의 형태를 따른다.
+- 환경변수는 `.env`에 두고 `EXPO_PUBLIC_` 접두사를 붙인다. 예시는 `.env.example`에 있다.
+
 ## 코드 컨벤션
 
 프론트엔드 코드 컨벤션은 아직 합의된 바 없다. 정해지면 이 절을 채운다. 정해지기 전까지는 기존 코드의 형태를 따르고, 새 규칙을 임의로 만들지 않는다.
+
+### 스타일링
+
+- Tailwind 클래스는 `className`으로 쓴다. NativeWind가 React Native 스타일로 변환한다.
+- 클래스 스캔 대상은 `src/**/*.{ts,tsx}`(`tailwind.config.js`)이다. 새 폴더를 `src/` 밖에 만들면 클래스가 생성되지 않는다.
+- Tailwind 진입은 `src/global.css`이고, `metro.config.js`의 `withNativeWind` input이 이 파일을 가리킨다.
 
 ## Git 컨벤션
 
@@ -117,6 +142,9 @@ nua-front/
 ## 미정 사항
 
 - 컴포넌트 분리 기준
-- 백엔드와의 통신 규약(경로 규칙, 에러 응답 형식)
-- 네비게이션 구성
+- 프론트엔드 코드 컨벤션(포맷·네이밍). 지금은 Expo 템플릿 형태(작은따옴표, 세미콜론, 2칸 들여쓰기)를 따른다
+- 백엔드와의 통신 규약(경로 규칙, 에러 응답 형식). 타입은 `/openapi.json`에서 생성하는 방향
+- 네비게이션 구성(expo-router / react-navigation)
+- Tailwind 버전. 지금은 Tailwind 3 + NativeWind 4 정식이고, Tailwind 4를 쓰려면 NativeWind 5(RC)가 필요하다
 - 빌드·배포 방식
+- 린터·포맷터 도구 도입 여부
