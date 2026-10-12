@@ -42,6 +42,7 @@
 | 언어 | TypeScript 6 (strict) |
 | 스타일링 | Tailwind CSS 3 (NativeWind 4 경유) |
 | 상태 관리 | zustand 5 |
+| 네비게이션 | expo-router (파일 기반) |
 | 경로 별칭 | `@/*` → `src/*` |
 
 ```bash
@@ -57,10 +58,13 @@ npm run typecheck      # tsc --noEmit
 
 `lwyd-webfront`의 구조를 따른다. 웹 전용 파일(index.html, vite·nginx·Dockerfile)은 Expo에 맞는 대응물로 바꾼다.
 
+- 화면은 `src/app/`의 라우트 파일이 담당한다. `pages/` 같은 별도 화면 디렉터리를 두지 않는다.
+- 라우트 루트는 `src/app`이다(expo-router가 `src` 아래의 `app`을 라우트 루트로 인식한다).
+
 ```text
 nua-front/
-├── app.json               # Expo 설정
-├── package.json
+├── app.json               # Expo 설정 (scheme, expo-router 플러그인)
+├── package.json           # main: expo-router/entry
 ├── babel.config.js        # babel-preset-expo + nativewind jsx
 ├── metro.config.js        # withNativeWind
 ├── tailwind.config.js     # Tailwind CSS
@@ -68,14 +72,14 @@ nua-front/
 ├── tsconfig.json          # strict, @/* → src/*
 ├── .env.example
 └── src/
-    ├── index.ts           # registerRootComponent
-    ├── App.tsx            # 루트 컴포넌트
+    ├── app/               # expo-router 라우트 (파일 기반)
+    │   ├── _layout.tsx    # 루트 레이아웃 (Stack, SafeAreaProvider, global.css)
+    │   └── index.tsx
     ├── api/               # 통신 클라이언트 + 도메인별 요청 함수
     ├── assets/
     ├── components/        # 단일 파일 컴포넌트는 .tsx, 디렉터리 래핑 없음
     │   └── icons/
     ├── hooks/
-    ├── pages/             # 화면 단위 (pages/<화면>/index.tsx)
     ├── store/             # zustand 스토어 (use<도메인>Store.ts)
     ├── enums.ts           # 백엔드 enum 값과 맞춘 상수 + 유니언 타입
     ├── global.css         # Tailwind 진입
@@ -90,7 +94,11 @@ nua-front/
 
 ## 코드 컨벤션
 
-프론트엔드 코드 컨벤션은 아직 합의된 바 없다. 정해지면 이 절을 채운다. 정해지기 전까지는 기존 코드의 형태를 따르고, 새 규칙을 임의로 만들지 않는다.
+프론트엔드 코드 컨벤션은 아직 합의된 바 없다. 정해지기 전까지는 기존 코드의 형태를 따르고, 새 규칙을 임의로 만들지 않는다.
+
+지금까지 확정된 것:
+
+- 작은따옴표, 세미콜론, 2칸 들여쓰기(Expo 템플릿 형태).
 
 ### 스타일링
 
@@ -127,7 +135,7 @@ nua-front/
 
 `main`이 주축이다. `develop`는 쓰지 않는다. 작업 단위마다 워킹 브랜치를 분리한다.
 
-1. 시작할 작업 하나를 설명하는 GitHub 이슈를 만든다. `.github/ISSUE_TEMPLATE/`의 `feature request`, `problem`, `chore`, `refactor` 템플릿을 쓴다.
+1. 시작할 작업 하나를 설명하는 GitHub 이슈를 만든다. `.github/ISSUE_TEMPLATE/`의 `feature request`, `problem` 템플릿을 쓴다.
 2. `main`에서 그 이슈에 연결된 워킹 브랜치를 딴다. 이름은 `.github/CONTRIBUTING.md` 규칙(`<prefix>/<작업내용>`, 번호 없음)을 따른다.
 3. 워킹 브랜치에서 작업을 마친 뒤 워킹 브랜치 → `main` 방향으로 PR을 연다. 본문에 `Closes #이슈번호`를 적는다.
 4. **PR 머지는 사람이 직접 한다. 에이전트는 머지하지 않는다.**
@@ -142,9 +150,7 @@ nua-front/
 ## 미정 사항
 
 - 컴포넌트 분리 기준
-- 프론트엔드 코드 컨벤션(포맷·네이밍). 지금은 Expo 템플릿 형태(작은따옴표, 세미콜론, 2칸 들여쓰기)를 따른다
-- 백엔드와의 통신 규약(경로 규칙, 에러 응답 형식). 타입은 `/openapi.json`에서 생성하는 방향
-- 네비게이션 구성(expo-router / react-navigation)
+- 백엔드와의 통신 규약(경로 규칙, 에러 응답 형식). **당분간 백엔드와 연결하지 않고 프론트 단독으로 진행한다** — 붙이는 시점에 정한다
 - Tailwind 버전. 지금은 Tailwind 3 + NativeWind 4 정식이고, Tailwind 4를 쓰려면 NativeWind 5(RC)가 필요하다
 - 빌드·배포 방식
 - 린터·포맷터 도구 도입 여부
