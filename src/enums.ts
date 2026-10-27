@@ -10,7 +10,6 @@ export type MartStageStep =
   | 'soundQuiz'
   | 'assemble'
   | 'correct'
-  | 'bonusWords'
   | 'reward';
 
 export const MART_WORD_ORDER: MartWordId[] = ['milk', 'cucumber', 'grape', 'tofu', 'meat'];
@@ -23,6 +22,5 @@ export const MART_STAGE_STEPS: MartStageStep[] = [
   'soundQuiz',
   'assemble',
   'correct',
-  'bonusWords',
   'reward',
 ];
