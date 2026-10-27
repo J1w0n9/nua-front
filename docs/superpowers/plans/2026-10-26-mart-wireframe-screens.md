@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Figma 와이어프레임(node 46:47)을 기반으로 "상품표가 지워진 마트" 게임의 13개 화면(프롤로그·마트지도·스테이지 9단계·보상·단어장·엔딩)을 5개 단어(우유·오이·포도·두부·고기) 콘텐츠로 구현한다.
+**Goal:** Figma 와이어프레임(node 46:47)을 기반으로 "상품표가 지워진 마트" 게임의 화면(프롤로그·마트지도·스테이지 8단계·보상·단어장·엔딩)을 5개 단어(우유·오이·포도·두부·고기) 콘텐츠로 구현한다. 확장 단어(보너스 단어) 기능은 설계 논의 중 전체 제거하기로 결정했다(Task 11b 참고).
 
-**Architecture:** `src/app/mart/` 아래 5개 라우트(index, map, stage/[word], wordbook, ending)로 구성. 스테이지 내부 9단계(B-1~B-9, C-1)는 라우터 전환이 아니라 `stage/[word].tsx` 안에서 zustand 스토어의 `stageStep` 값으로 분기한다. 글자 조립(B-6) 틀림→재도전(B-8) 흐름은 `StageAssemble` 컴포넌트 내부 로컬 state로만 처리해, 맞게 채운 칸은 유지하고 틀린 칸만 다시 채우게 한다.
+**Architecture:** `src/app/mart/` 아래 5개 라우트(index, map, stage/[word], wordbook, ending)로 구성. 스테이지 내부 8단계(B-1~B-7, C-1)는 라우터 전환이 아니라 `stage/[word].tsx` 안에서 zustand 스토어의 `stageStep` 값으로 분기한다. 글자 조립(B-6) 틀림→재도전(B-8) 흐름은 `StageAssemble` 컴포넌트 내부 로컬 state로만 처리해, 맞게 채운 칸은 유지하고 틀린 칸만 다시 채우게 한다.
 
 **Tech Stack:** Expo (SDK 57) + React Native 0.86, TypeScript 6 strict, NativeWind 4(Tailwind 3), zustand 5, expo-router.
 
@@ -30,7 +30,7 @@
 - Create: `src/data/martWords.ts`
 
 **Interfaces:**
-- Produces: `MartWordId` (`'milk'|'cucumber'|'grape'|'tofu'|'meat'`), `MartWordStatus` (`'locked'|'unlocked'|'completed'`), `MartStageStep` (9개 리터럴), `MART_WORD_ORDER: MartWordId[]`, `MART_STAGE_STEPS: MartStageStep[]`, `MartJamoSlot { jamo: string; given: boolean }`, `MartBonusWord { label: string; imageSrc?: string }`, `MartWordConfig { id, label, syllables, slots, meaningOptions, bonusWords, imageSrc? }`, `MART_WORDS: Record<MartWordId, MartWordConfig>`.
+- Produces: `MartWordId` (`'milk'|'cucumber'|'grape'|'tofu'|'meat'`), `MartWordStatus` (`'locked'|'unlocked'|'completed'`), `MartStageStep` (9개 리터럴), `MART_WORD_ORDER: MartWordId[]`, `MART_STAGE_STEPS: MartStageStep[]`, `MartJamoSlot { jamo: string; given: boolean }`, `MartWordConfig { id, label, syllables, slots, meaningOptions, imageSrc? }`, `MART_WORDS: Record<MartWordId, MartWordConfig>`.
 
 - [ ] **Step 1: `src/enums.ts` 작성**
 
@@ -47,7 +47,6 @@ export type MartStageStep =
   | 'soundQuiz'
   | 'assemble'
   | 'correct'
-  | 'bonusWords'
   | 'reward';
 
 export const MART_WORD_ORDER: MartWordId[] = ['milk', 'cucumber', 'grape', 'tofu', 'meat'];
@@ -60,7 +59,6 @@ export const MART_STAGE_STEPS: MartStageStep[] = [
   'soundQuiz',
   'assemble',
   'correct',
-  'bonusWords',
   'reward',
 ];
 ```
@@ -77,18 +75,12 @@ export interface MartJamoSlot {
   given: boolean;
 }
 
-export interface MartBonusWord {
-  label: string;
-  imageSrc?: string;
-}
-
 export interface MartWordConfig {
   id: MartWordId;
   label: string;
   syllables: string[];
   slots: MartJamoSlot[];
   meaningOptions: string[];
-  bonusWords: MartBonusWord[];
   imageSrc?: string;
 }
 
@@ -104,7 +96,6 @@ export const MART_WORDS: Record<MartWordId, MartWordConfig> = {
       { jamo: 'ㅠ', given: false },
     ],
     meaningOptions: ['우유', '주스', '물'],
-    bonusWords: [{ label: '딸기우유' }, { label: '바나나우유' }, { label: '초코우유' }],
   },
   cucumber: {
     id: 'cucumber',
@@ -117,7 +108,6 @@ export const MART_WORDS: Record<MartWordId, MartWordConfig> = {
       { jamo: 'ㅣ', given: false },
     ],
     meaningOptions: ['오이', '당근', '감자'],
-    bonusWords: [{ label: '오이지' }],
   },
   grape: {
     id: 'grape',
@@ -130,7 +120,6 @@ export const MART_WORDS: Record<MartWordId, MartWordConfig> = {
       { jamo: 'ㅗ', given: false },
     ],
     meaningOptions: ['포도', '사과', '수박'],
-    bonusWords: [{ label: '포도주스' }],
   },
   tofu: {
     id: 'tofu',
@@ -143,7 +132,6 @@ export const MART_WORDS: Record<MartWordId, MartWordConfig> = {
       { jamo: 'ㅜ', given: false },
     ],
     meaningOptions: ['두부', '계란', '김치'],
-    bonusWords: [{ label: '두부조림' }],
   },
   meat: {
     id: 'meat',
@@ -156,7 +144,6 @@ export const MART_WORDS: Record<MartWordId, MartWordConfig> = {
       { jamo: 'ㅣ', given: false },
     ],
     meaningOptions: ['고기', '생선', '빵'],
-    bonusWords: [{ label: '고기국' }],
   },
 };
 ```
@@ -1136,16 +1123,17 @@ git commit -m "add: 마트 스테이지 글자조립 단계(B-6) 추가"
 
 ---
 
-### Task 11: 스테이지 단계 — 정답 결과 · 확장 단어 · 보상 (B-7, B-9, C-1)
+### Task 11: 스테이지 단계 — 정답 결과 · 보상 (B-7, C-1)
+
+> **수정 이력:** 원래 계획은 B-9(확장 단어) 단계를 포함했으나, 사용자 요청으로 보너스 단어 기능 전체를 제거했다(아래 Task 11b 참고). 이 섹션은 `StageBonusWords`를 뺀 최종 형태다.
 
 **Files:**
 - Create: `src/components/mart/stage/StageCorrectResult.tsx`
-- Create: `src/components/mart/stage/StageBonusWords.tsx`
 - Create: `src/components/mart/stage/StageReward.tsx`
 
 **Interfaces:**
-- Consumes: `MartImagePlaceholder`, `MartIcon`, `MartRoundButton`, `MartWordCard`, `MartWordConfig`, `MartBonusWord`
-- Produces: `StageCorrectResult({ word, onNext })`, `StageBonusWords({ word, onNext })`, `StageReward({ word })`.
+- Consumes: `MartImagePlaceholder`, `MartIcon`, `MartRoundButton`, `MartWordCard`, `MartWordConfig`
+- Produces: `StageCorrectResult({ word, onNext })`, `StageReward({ word })`.
 
 - [ ] **Step 1: `src/components/mart/stage/StageCorrectResult.tsx` 작성**
 
@@ -1177,45 +1165,7 @@ export function StageCorrectResult({ word, onNext }: StageCorrectResultProps) {
 }
 ```
 
-- [ ] **Step 2: `src/components/mart/stage/StageBonusWords.tsx` 작성**
-
-```tsx
-import { Text, View } from 'react-native';
-import type { MartWordConfig } from '@/data/martWords';
-import { MartImagePlaceholder } from '../MartImagePlaceholder';
-import { MartRoundButton } from '../MartRoundButton';
-
-interface StageBonusWordsProps {
-  word: MartWordConfig;
-  onNext: () => void;
-}
-
-export function StageBonusWords({ word, onNext }: StageBonusWordsProps) {
-  return (
-    <View className="flex-1 justify-between py-6">
-      <View className="gap-4">
-        {word.bonusWords.map((bonus) => (
-          <View key={bonus.label} className="flex-row items-center gap-2">
-            <MartImagePlaceholder imageSrc={word.imageSrc} className="w-[64px] h-[64px] rounded-xl" />
-            <Text className="text-xl">+</Text>
-            <View className="px-3 py-2 rounded-lg bg-gray-100">
-              <Text className="font-bold">{word.label}</Text>
-            </View>
-            <Text className="text-xl">=</Text>
-            <MartImagePlaceholder imageSrc={bonus.imageSrc} className="w-[64px] h-[56px] rounded-xl" />
-            <Text className="font-bold">{bonus.label}</Text>
-          </View>
-        ))}
-      </View>
-      <View className="items-center">
-        <MartRoundButton variant="primary" icon="next" onPress={onNext} />
-      </View>
-    </View>
-  );
-}
-```
-
-- [ ] **Step 3: `src/components/mart/stage/StageReward.tsx` 작성**
+- [ ] **Step 2: `src/components/mart/stage/StageReward.tsx` 작성**
 
 ```tsx
 import { useRouter } from 'expo-router';
@@ -1251,16 +1201,53 @@ export function StageReward({ word }: StageRewardProps) {
 }
 ```
 
-- [ ] **Step 4: 타입 검증**
+- [ ] **Step 3: 타입 검증**
 
 Run: `npm run typecheck`
 Expected: 에러 없음
 
+- [ ] **Step 4: Commit**
+
+```bash
+git add src/components/mart/stage/StageCorrectResult.tsx src/components/mart/stage/StageReward.tsx
+git commit -m "add: 마트 스테이지 정답결과·보상 단계(B-7, C-1) 추가"
+```
+
+---
+
+### Task 11b: 확장 단어(보너스 단어) 기능 제거
+
+> **배경:** 사용자가 설계 논의 중 모든 코너(식료품 포함)에서 확장 단어/보너스 단어 기능을 없애기로 결정했다. Task 1에서 추가한 `bonusWords` 데이터와 Task 11에서 만든 `StageBonusWords` 컴포넌트, Task 1·2의 `MartStageStep`에 있던 `bonusWords` 단계를 제거한다. 이 태스크는 Task 1·2·11의 이미 커밋된 코드를 수정한다.
+
+**Files:**
+- Modify: `src/enums.ts` — `MartStageStep`에서 `'bonusWords'` 제거, `MART_STAGE_STEPS` 배열에서도 제거(이미 위 Task 1 섹션이 수정된 최종본을 반영하고 있다 — 이 태스크 실행 시점에 실제 커밋된 파일에는 아직 `'bonusWords'`가 남아있으므로 지운다)
+- Modify: `src/data/martWords.ts` — `MartBonusWord` 인터페이스 삭제, `MartWordConfig`에서 `bonusWords` 필드 삭제, 5개 단어 데이터에서 `bonusWords: [...]` 라인 삭제
+- Delete: `src/components/mart/stage/StageBonusWords.tsx`
+
+- [ ] **Step 1: `src/enums.ts`에서 `'bonusWords'` 제거**
+
+`MartStageStep` 유니언과 `MART_STAGE_STEPS` 배열 양쪽에서 `'bonusWords'` 항목을 지운다. 수정 후 `MartStageStep`은 `'problem' | 'meetWord' | 'meaningQuiz' | 'listen' | 'soundQuiz' | 'assemble' | 'correct' | 'reward'` 8개 값이 되어야 한다.
+
+- [ ] **Step 2: `src/data/martWords.ts`에서 보너스 단어 제거**
+
+`MartBonusWord` 인터페이스를 삭제하고, `MartWordConfig`에서 `bonusWords: MartBonusWord[];` 필드를 삭제한다. `MART_WORDS`의 milk/cucumber/grape/tofu/meat 5개 항목에서 각각의 `bonusWords: [...]` 라인을 삭제한다.
+
+- [ ] **Step 3: `StageBonusWords.tsx` 삭제**
+
+```bash
+git rm src/components/mart/stage/StageBonusWords.tsx
+```
+
+- [ ] **Step 4: 타입 검증**
+
+Run: `npm run typecheck`
+Expected: 에러 없음 (이 시점에는 아직 아무도 `MartStageStep`의 `'bonusWords'`나 `StageBonusWords`를 참조하지 않으므로 컴파일만 통과하면 된다 — Task 12가 오케스트레이터를 새로 연결한다)
+
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/components/mart/stage/StageCorrectResult.tsx src/components/mart/stage/StageBonusWords.tsx src/components/mart/stage/StageReward.tsx
-git commit -m "add: 마트 스테이지 정답결과·확장단어·보상 단계(B-7, B-9, C-1) 추가"
+git add src/enums.ts src/data/martWords.ts
+git commit -m "rm: 마트 게임 확장 단어(보너스 단어) 기능 제거"
 ```
 
 ---
@@ -1280,7 +1267,6 @@ import { useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MartTopBar } from '@/components/mart/MartTopBar';
 import { StageAssemble } from '@/components/mart/stage/StageAssemble';
-import { StageBonusWords } from '@/components/mart/stage/StageBonusWords';
 import { StageCorrectResult } from '@/components/mart/stage/StageCorrectResult';
 import { StageListen } from '@/components/mart/stage/StageListen';
 import { StageMeaningQuiz } from '@/components/mart/stage/StageMeaningQuiz';
@@ -1310,9 +1296,8 @@ export default function MartStageScreen() {
       {stageStep === 'listen' && <StageListen word={word} onNext={advanceStep} />}
       {stageStep === 'soundQuiz' && <StageSoundQuiz word={word} onCorrect={advanceStep} />}
       {stageStep === 'assemble' && <StageAssemble word={word} onCorrect={advanceStep} />}
-      {stageStep === 'correct' && <StageCorrectResult word={word} onNext={advanceStep} />}
-      {stageStep === 'bonusWords' && (
-        <StageBonusWords
+      {stageStep === 'correct' && (
+        <StageCorrectResult
           word={word}
           onNext={() => {
             completeStage();
@@ -1333,7 +1318,7 @@ Expected: 에러 없음
 
 - [ ] **Step 3: 수동 확인 — 우유 스테이지 전체 플로우**
 
-Expo에서 지도 → 우유 진열대 → 9단계를 끝까지 눌러본다: 4컷 → 단어 만나기 → 뜻 퀴즈(정답 선택) → 소리 듣기 → 소리 퀴즈(정답 선택) → 글자 조립(ㅜ, ㅠ 타일을 올바른 빈칸에 채우기) → 정답 결과 → 확장 단어 → 보상. 글자 조립에서 일부러 틀린 타일을 넣어 오답 화면이 뜨는지, 재시도 버튼을 누르면 맞았던 칸은 유지되고 틀린 칸만 다시 빈칸이 되는지 확인한다.
+Expo에서 지도 → 우유 진열대 → 8단계를 끝까지 눌러본다: 4컷 → 단어 만나기 → 뜻 퀴즈(정답 선택) → 소리 듣기 → 소리 퀴즈(정답 선택) → 글자 조립(ㅜ, ㅠ 타일을 올바른 빈칸에 채우기) → 정답 결과 → 보상. 글자 조립에서 일부러 틀린 타일을 넣어 오답 화면이 뜨는지, 재시도 버튼을 누르면 맞았던 칸은 유지되고 틀린 칸만 다시 빈칸이 되는지 확인한다.
 
 - [ ] **Step 4: Commit**
 
@@ -1460,7 +1445,7 @@ Expected: 에러 없음
 
 - [ ] **Step 2: 5개 단어 전부 끝까지 플레이**
 
-`npm start`로 Expo 실행. 프롤로그 → 지도 → 우유 → 오이 → 포도 → 두부 → 고기 순서로 각 단어의 9단계를 전부 완료한다. 각 단어의 글자 조립 단계에서 빈칸 개수가 스펙과 일치하는지 확인한다(우유 2 / 오이 2 / 포도 3 / 두부 4 / 고기 4). 포도를 완료한 뒤 단어장에 우유·오이·포도까지 보이는지, 두부가 그제서야 해금되는지 확인한다.
+`npm start`로 Expo 실행. 프롤로그 → 지도 → 우유 → 오이 → 포도 → 두부 → 고기 순서로 각 단어의 8단계를 전부 완료한다. 각 단어의 글자 조립 단계에서 빈칸 개수가 스펙과 일치하는지 확인한다(우유 2 / 오이 2 / 포도 3 / 두부 4 / 고기 4). 포도를 완료한 뒤 단어장에 우유·오이·포도까지 보이는지, 두부가 그제서야 해금되는지 확인한다.
 
 - [ ] **Step 3: 전체 완료 후 엔딩 확인**
 
