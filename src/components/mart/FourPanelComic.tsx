@@ -1,4 +1,4 @@
-import { View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { MartComicPanel } from './MartComicPanel';
 import { MartRoundButton } from './MartRoundButton';
 
@@ -9,7 +9,11 @@ interface FourPanelComicProps {
 
 export function FourPanelComic({ panels, onNext }: FourPanelComicProps) {
   return (
-    <View className="flex-1 items-center justify-between py-6">
+    <ScrollView
+      className="flex-1"
+      contentContainerStyle={{ flexGrow: 1 }}
+      contentContainerClassName="items-center justify-between py-6"
+    >
       <View className="flex-row flex-wrap w-[350px] justify-between">
         {panels.map((src, index) => (
           <View key={index} className="mb-2">
@@ -18,6 +22,6 @@ export function FourPanelComic({ panels, onNext }: FourPanelComicProps) {
         ))}
       </View>
       <MartRoundButton variant="primary" icon="next" onPress={onNext} />
-    </View>
+    </ScrollView>
   );
 }

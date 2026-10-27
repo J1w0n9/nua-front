@@ -11,6 +11,7 @@ export interface MartWordConfig {
   syllables: string[];
   slots: MartJamoSlot[];
   meaningOptions: string[];
+  soundOptions: string[];
   imageSrc?: string;
 }
 
@@ -26,6 +27,7 @@ export const MART_WORDS: Record<MartWordId, MartWordConfig> = {
       { jamo: 'ㅠ', given: false },
     ],
     meaningOptions: ['우유', '주스', '물'],
+    soundOptions: ['우유', '치즈', '요거트'],
   },
   cucumber: {
     id: 'cucumber',
@@ -38,6 +40,7 @@ export const MART_WORDS: Record<MartWordId, MartWordConfig> = {
       { jamo: 'ㅣ', given: false },
     ],
     meaningOptions: ['오이', '당근', '감자'],
+    soundOptions: ['오이', '호박', '가지'],
   },
   grape: {
     id: 'grape',
@@ -50,6 +53,7 @@ export const MART_WORDS: Record<MartWordId, MartWordConfig> = {
       { jamo: 'ㅗ', given: false },
     ],
     meaningOptions: ['포도', '사과', '수박'],
+    soundOptions: ['포도', '딸기', '바나나'],
   },
   tofu: {
     id: 'tofu',
@@ -62,6 +66,7 @@ export const MART_WORDS: Record<MartWordId, MartWordConfig> = {
       { jamo: 'ㅜ', given: false },
     ],
     meaningOptions: ['두부', '계란', '김치'],
+    soundOptions: ['두부', '콩나물', '된장'],
   },
   meat: {
     id: 'meat',
@@ -74,5 +79,6 @@ export const MART_WORDS: Record<MartWordId, MartWordConfig> = {
       { jamo: 'ㅣ', given: false },
     ],
     meaningOptions: ['고기', '생선', '빵'],
+    soundOptions: ['고기', '치킨', '햄'],
   },
 };

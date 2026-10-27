@@ -11,6 +11,7 @@ interface MartState {
   seePrologue: () => void;
   startStage: (word: MartWordId) => void;
   advanceStep: () => void;
+  goBackStep: () => void;
   completeStage: () => void;
 }
 
@@ -38,6 +39,15 @@ export const useMartStore = create<MartState>((set, get) => ({
     const currentIndex = MART_STAGE_STEPS.indexOf(stageStep);
     const nextStep = MART_STAGE_STEPS[currentIndex + 1];
     if (nextStep) set({ stageStep: nextStep });
+  },
+
+  goBackStep: () => {
+    const { stageStep } = get();
+    const currentIndex = MART_STAGE_STEPS.indexOf(stageStep);
+    if (currentIndex > 0) {
+      const previousStep = MART_STAGE_STEPS[currentIndex - 1];
+      set({ stageStep: previousStep });
+    }
   },
 
   completeStage: () => {

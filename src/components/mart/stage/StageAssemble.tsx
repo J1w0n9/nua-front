@@ -69,7 +69,7 @@ export function StageAssemble({ word, onCorrect }: StageAssembleProps) {
   if (showIncorrect) {
     return (
       <View className="flex-1 items-center justify-between py-6">
-        <SlotRow word={word} filled={filled} />
+        <SlotRow word={word} filled={filled} showErrors />
         <MartImagePlaceholder className="w-[350px] h-[300px] rounded-2xl" />
         <MartRoundButton variant="primary" icon="retry" onPress={handleRetry} />
       </View>
@@ -89,7 +89,15 @@ export function StageAssemble({ word, onCorrect }: StageAssembleProps) {
   );
 }
 
-function SlotRow({ word, filled }: { word: MartWordConfig; filled: Record<number, string> }) {
+function SlotRow({
+  word,
+  filled,
+  showErrors,
+}: {
+  word: MartWordConfig;
+  filled: Record<number, string>;
+  showErrors?: boolean;
+}) {
   return (
     <View className="flex-row gap-3">
       {word.syllables.map((_, syllableIndex) => {
@@ -97,8 +105,16 @@ function SlotRow({ word, filled }: { word: MartWordConfig; filled: Record<number
         const vowelIndex = syllableIndex * 2 + 1;
         return (
           <View key={syllableIndex} className="w-[84px] h-[84px] gap-1">
-            <JamoSlot slot={word.slots[consonantIndex]} filledJamo={filled[consonantIndex]} />
-            <JamoSlot slot={word.slots[vowelIndex]} filledJamo={filled[vowelIndex]} />
+            <JamoSlot
+              slot={word.slots[consonantIndex]}
+              filledJamo={filled[consonantIndex]}
+              showErrors={showErrors}
+            />
+            <JamoSlot
+              slot={word.slots[vowelIndex]}
+              filledJamo={filled[vowelIndex]}
+              showErrors={showErrors}
+            />
           </View>
         );
       })}
@@ -106,14 +122,32 @@ function SlotRow({ word, filled }: { word: MartWordConfig; filled: Record<number
   );
 }
 
-function JamoSlot({ slot, filledJamo }: { slot: MartJamoSlot; filledJamo?: string }) {
+function JamoSlot({
+  slot,
+  filledJamo,
+  showErrors,
+}: {
+  slot: MartJamoSlot;
+  filledJamo?: string;
+  showErrors?: boolean;
+}) {
   const display = slot.given ? slot.jamo : filledJamo;
+
+  let colorClassName: string;
+  if (slot.given) {
+    colorClassName = 'bg-gray-200';
+  } else if (display) {
+    if (showErrors) {
+      colorClassName = filledJamo === slot.jamo ? 'bg-green-100' : 'bg-red-100';
+    } else {
+      colorClassName = 'bg-green-100';
+    }
+  } else {
+    colorClassName = 'bg-white border-2 border-dashed border-gray-300';
+  }
+
   return (
-    <View
-      className={`h-[32px] rounded-lg items-center justify-center ${
-        slot.given ? 'bg-gray-200' : display ? 'bg-green-100' : 'bg-white border-2 border-dashed border-gray-300'
-      }`}
-    >
+    <View className={`h-[32px] rounded-lg items-center justify-center ${colorClassName}`}>
       {display ? <Text className="text-lg font-bold">{display}</Text> : null}
     </View>
   );

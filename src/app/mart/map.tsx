@@ -21,7 +21,9 @@ export default function MartMap() {
       <View className="flex-1 flex-row flex-wrap p-4 justify-between content-start">
         {MART_WORD_ORDER.map((wordId) => {
           const word = MART_WORDS[wordId];
-          const locked = wordStatus[wordId] === 'locked';
+          const status = wordStatus[wordId];
+          const locked = status === 'locked';
+          const icon = locked ? 'lock' : status === 'completed' ? 'check' : 'hand';
           return (
             <Pressable
               key={wordId}
@@ -39,7 +41,7 @@ export default function MartMap() {
               </View>
               <MartImagePlaceholder imageSrc={word.imageSrc} className="w-[120px] h-[70px] rounded" />
               <View className="mt-1">
-                <MartIcon name={locked ? 'lock' : 'hand'} size={20} />
+                <MartIcon name={icon} size={20} />
               </View>
             </Pressable>
           );

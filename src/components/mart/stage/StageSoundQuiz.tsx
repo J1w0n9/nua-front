@@ -29,7 +29,7 @@ export function StageSoundQuiz({ word, onCorrect }: StageSoundQuizProps) {
         }}
       />
       <View className="w-[300px] gap-3">
-        {word.meaningOptions.map((option) => (
+        {word.soundOptions.map((option) => (
           <MartOptionRow
             key={option}
             label={option}
